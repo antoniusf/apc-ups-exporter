@@ -2,13 +2,28 @@ import re
 
 line_regex = re.compile(r"([^:\s]*)\s*:\s*(.*)", re.ASCII)
 
+base_unit_conversion_factors = {
+    "seconds": 1,
+    "minutes": 60, # seconds
+    "volts": 1,
+    "percent": 1,
+    "hz": 1,
+}
+
+def convert_to_base_unit(value, unit_name):
+    conversion_factor = base_unit_conversion_factors.get(unit_name.lower())
+    if conversion_factor is None:
+        raise ValueError("Unknown unit name: {}".format(unit_name))
+    return value * conversion_factor
+
 def parse_float(unit):
     regex = re.compile(r"(\d+(\.\d+)?) {}".format(unit), re.ASCII)
 
     def do_parse(string):
         result = regex.fullmatch(string)
         if result:
-            return float(result.groups()[0])
+            unconverted_value = float(result.groups()[0])
+            return convert_to_base_unit(unconverted_value, unit)
 
     return do_parse
 
